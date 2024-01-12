@@ -1,55 +1,63 @@
-import { autor } from "../models/ATmodels.js";
+import NotFound from "../Erros/NotFound.js";
+import { autor } from "../models/index.js";
 
 class ATcontroller {
 
-    static async ATlist (req,res) {
-        try{   
-            const ATlist = await autor.find({});
-            res.status(200).json(ATlist);
-        } catch (erro) {
-            res.status(500).json({message: `${erro.message} - Requisition Error`})
-        };
-        };
+  static async ATlist (req,res,next) {
+    try{   
+      const ATlist = autor.find({});
+      req.result = ATlist;
+      next();
+    } catch (erro) {
+      next(erro);
+    }
+  }
 
-        static async ATid (req,res) {
-            try{
-                const id = req.params.id;   
-                const ATlist = await autor.findById(id);
-                res.status(200).json(ATlist);
-            } catch (erro) {
-                res.status(500).json({message: `${erro.message} - Autor requisition Error`})
-            };
-            };
+  static async ATid (req,res,next) {
+    try{
+      const id = req.params.id;   
+      const ATlist = await autor.findById(id);
 
-            static async attAT (req,res) {
-                try{
-                    const id = req.params.id;   
-                    await autor.findByIdAndUpdate(id, req.body);
-                    res.status(200).json({message: "Autor atualization complete"});
-                } catch (erro) {
-                    res.status(500).json({message: `${erro.message} - Autor atualization Error`})
-                };
-                };
+      if (ATlist !== null){
+        res.status(200).json(ATlist);
+      } else {
+        next(new NotFound("Autor ID not found"));
+      }
+    } catch (erro) {
+      next(erro);
+    }
+  }
+  
 
-                static async ATcreator (req,res) {
-                    try {
-                        const newAT = await autor.create(req.body);
-                        res.status(201).json({message: "Autor registered", autor: newAT}); 
-                    } catch (erro) {
-                        res.status(500).json({ message: `${erro.message} - Failed to register`});
-                    };
-                };
+  static async attAT (req,res,next) {
+    try{
+      const id = req.params.id;   
+      await autor.findByIdAndUpdate(id, req.body);
+      res.status(200).json({message: "Autor atualization complete"});
+    } catch (erro) {
+      next(erro);
+    }
+  }
 
-                static async ATdeleter (req,res) {
-                    try{
-                        const id = req.params.id;   
-                        await autor.findByIdAndDelete(id);
-                        res.status(200).json({message: "Autor removed"});
-                    } catch (erro) {
-                        res.status(500).json({message: `${erro.message} - Error Trying to remove Autor`})
-                    };
-                    };
+  static async ATcreator (req,res,next) {
+    try {
+      const newAT = await autor.create(req.body);
+      res.status(201).json({message: "Autor registered", autor: newAT}); 
+    } catch (erro) {
+      next(erro);
+    }
+  }
+
+  static async ATdeleter (req,res,next) {
+    try{
+      const id = req.params.id;   
+      await autor.findByIdAndDelete(id);
+      res.status(200).json({message: "Autor removed"});
+    } catch (erro) {
+      next(erro);
+    }
+  }
             
-};
+}
 
 export default ATcontroller;
